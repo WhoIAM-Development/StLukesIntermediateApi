@@ -1,4 +1,5 @@
 ﻿using IntermediateAPI.Models;
+using IntermediateAPI.Models.UserValidation;
 using IntermediateAPI.Services;
 using IntermediateAPI.Utilities;
 
@@ -13,6 +14,13 @@ namespace IntermediateAPI
             services.AddOptions<FraudProtectionSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration.GetSection("FraudProtectionSettings").Bind(settings);
+            });
+
+            services.AddSingleton<ExperianService>();
+
+            services.AddOptions<ExperianSettings>().Configure<IConfiguration>((settings, configuration) =>
+            {
+                configuration.GetSection("ExperianSettings").Bind(settings);
             });
 
             services.AddOptions<TokenProviderServiceSettings>().Configure<IConfiguration>((settings, configuration) =>
