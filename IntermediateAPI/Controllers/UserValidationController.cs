@@ -1,4 +1,6 @@
-﻿using IntermediateAPI.Services;
+﻿using IntermediateAPI.Models;
+using IntermediateAPI.Models.UserValidation;
+using IntermediateAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +19,30 @@ namespace IntermediateAPI.Controllers
             this.service = service;
         }
         [HttpPost]
-        public async Task<IActionResult> Question()
+        public async Task<IActionResult> Question([FromBody] UserInfo userInfo)
         {
-
+            var response = await service.GetQuestions(userInfo);
+            if(response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Title, response.error?.Message));
+            }
         }
         [HttpPost]
-        public async Task<IActionResult> Answer()
+        public async Task<IActionResult> Answer([FromBody] ExperianAnswers answers)
         {
-
+            var response = await service.SubmitAnswers(answers);
+            if (response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Title, response.error?.Message));
+            }
         }
     }
 }

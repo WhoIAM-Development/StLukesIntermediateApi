@@ -17,25 +17,28 @@ namespace IntermediateAPI.Services
             client = factory.CreateClient();
             settings = options.Value;
             this.logger = logger;
+            client.BaseAddress = new Uri(settings?.ApiBaseUrl ?? "");
         }
-        public async Task<string> GetQuestions(UserInfo info)
+        public async Task<(bool successful, ExperianData? response, ExperianErrorResponse? error)> GetQuestions(UserInfo? info)
         {
-            var result = await PostAsync<ExperianData, ExperianErrorResponse>("/api/v2/sso/linkviaexperian", info);
+            var result = await PostAsync<ExperianDataDebug, ExperianErrorResponse>("api/v2/sso/linkviaexperian", info);
+            return result;
         }
-        public async Task<string> SubmitAnswers(ExperianAnswers answers)
+        public async Task<(bool successful, ExperianVerificationResponse? response, ExperianErrorResponse? error)> SubmitAnswers(ExperianAnswers? answers)
         {
-            var result = await PostAsync<ExperianVerificationResponse, ExperianErrorResponse>("/api/v2/sso/submitanswerstoexperian", answers);
+            var result = await PostAsync<ExperianVerificationResponse, ExperianErrorResponse>("api/v2/sso/submitanswerstoexperian", answers);
+            return result;
         }
 
         #region API Calls
-        private async Task<(SuccessType? result, FailureType? error, HttpStatusCode ResponseCode)> PostAsync<SuccessType, FailureType>(string endpoint, object data)
+        private async Task<(bool successful, SuccessType? response, FailureType? error)> PostAsync<SuccessType, FailureType>(string endpoint, object? data)
         {
             try
             {
-                var url = $"{settings.ApiBaseUrl}/{endpoint}";
+                //var url = $"{settings.ApiBaseUrl}/{endpoint}";
                 //var jsonContent = JsonConvert.SerializeObject(data);
-                logger.LogInformation("Sending Request to {url}. Content: {data}", url, data);
-                using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+                logger.LogInformation("Sending Request to {url}. Content: {data}", endpoint, data);
+                using (var request = new HttpRequestMessage(HttpMethod.Post, endpoint))
                 {
                     using (var content = JsonContent.Create(data))
                     {
@@ -46,13 +49,25 @@ namespace IntermediateAPI.Services
                             {
                                 response.EnsureSuccessStatusCode();
                                 var responseBody = await response.Content.ReadFromJsonAsync<SuccessType>();
-                                return (responseBody, default, response.StatusCode);
+                                return (true, responseBody, default);
 
                             }
-                            catch(Exception ex)
+                            catch(Exception)
                             {
-                                var responseBody = await response.Content.ReadFromJsonAsync<FailureType>();
-                                return (default, responseBody, response.StatusCode);
+                                try
+                                {
+                                    var responseBody = await response.Content.ReadFromJsonAsync<FailureType>();
+                                    logger.LogError("Request was unsuccessful. Response: {responseBody}", responseBody);
+                                    return (false, default, responseBody);
+
+                                }
+                                catch (Exception)
+                                {
+                                    var statusCode = response.StatusCode;
+                                    var responseString = await response.Content.ReadAsStringAsync();
+                                    logger.LogError("Error: {statusCode}. The upstream server has returned an enexpected response: {responseString}", statusCode, responseString);
+                                    throw;
+                                }
                             }
                         }
                     }
@@ -63,6 +78,10 @@ namespace IntermediateAPI.Services
             {
                 throw;
             }
+        }
+        private async Task<(bool successful, SuccessType? response, object? error)> PostAsync<SuccessType>(string endpoint, object data)
+        {
+            return await PostAsync<SuccessType, object>(endpoint, data);
         }
         #endregion
     }

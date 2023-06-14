@@ -8,23 +8,23 @@ namespace IntermediateAPI.Models
 {
     public class B2CResponseContent
     {
-        public string version { get; set; }
+        public string? version { get; set; }
         public int status { get; set; }
-        public string userMessage { get; set; }
+        public string? userMessage { get; set; }
 
-        public string developerMessage { get; set; }
+        public string? developerMessage { get; set; }
 
-        public B2CResponseContent(string message, HttpStatusCode status)
+        public B2CResponseContent(string? message, HttpStatusCode status)
         {
             this.userMessage = message;
             this.status = (int)status;
-            this.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            this.version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
         }
     }
 
     public class B2CErrorResponseContent : B2CResponseContent
     {
-        public B2CErrorResponseContent(string message, string developerMessage = null) : base(message, HttpStatusCode.Conflict)
+        public B2CErrorResponseContent(string? message, string? developerMessage = null) : base(message, HttpStatusCode.Conflict)
         {
             this.developerMessage = developerMessage;
         }

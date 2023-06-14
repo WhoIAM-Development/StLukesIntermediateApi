@@ -15,13 +15,13 @@ namespace IntermediateAPI
             {
                 configuration.GetSection("FraudProtectionSettings").Bind(settings);
             });
-
-            services.AddSingleton<ExperianService>();
-
             services.AddOptions<ExperianSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration.GetSection("ExperianSettings").Bind(settings);
             });
+
+            services.AddSingleton<ExperianService>();
+
 
             services.AddOptions<TokenProviderServiceSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
