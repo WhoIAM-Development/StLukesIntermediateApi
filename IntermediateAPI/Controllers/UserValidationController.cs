@@ -32,9 +32,9 @@ namespace IntermediateAPI.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> Answer([FromBody] ExperianAnswers answers)
+        public async Task<IActionResult> Answer([FromBody] ValidateUserAnswersInput answers)
         {
-            var response = await service.SubmitAnswers(answers);
+            var response = await service.SubmitAnswers(answers.ToExperianAnswers());
             if (response.successful)
             {
                 return Ok(response.response);

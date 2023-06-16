@@ -21,7 +21,7 @@ namespace IntermediateAPI.Services
         }
         public async Task<(bool successful, ExperianData? response, ExperianErrorResponse? error)> GetQuestions(UserInfo? info)
         {
-            var result = await PostAsync<ExperianDataDebug, ExperianErrorResponse>("api/v2/sso/linkviaexperian", info);
+            var result = await PostAsync<ExperianData, ExperianErrorResponse>("api/v2/sso/linkviaexperian", info);
             return result;
         }
         public async Task<(bool successful, ExperianVerificationResponse? response, ExperianErrorResponse? error)> SubmitAnswers(ExperianAnswers? answers)
