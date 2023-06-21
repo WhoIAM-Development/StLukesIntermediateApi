@@ -17,5 +17,6 @@
         public string? Email { get; set; }
         public string? State { get; set; }
         public string? Gender { get; set; }
+        public string? MyChartId { get; set; }
     }
 }
