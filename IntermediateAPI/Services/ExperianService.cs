@@ -1,9 +1,11 @@
-﻿using IntermediateAPI.Models.UserValidation;
+﻿using IntermediateAPI.Models;
+using IntermediateAPI.Models.External.Experian;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace IntermediateAPI.Services
 {
@@ -19,14 +21,51 @@ namespace IntermediateAPI.Services
             this.logger = logger;
             client.BaseAddress = new Uri(settings?.ApiBaseUrl ?? "");
         }
-        public async Task<(bool successful, ExperianData? response, ExperianErrorResponse? error)> GetQuestions(UserInfo? info)
+        public async Task<(bool successful, ExVerificationQuestionsResponse? response, ExGeneralErrorResponse? error)> GetQuestions(GetVerificationQuestionsInput getQuestionsInput)
         {
-            var result = await PostAsync<ExperianData, ExperianErrorResponse>("api/v2/sso/linkviaexperian", info);
+            var payload = new
+            {
+                getQuestionsInput.FirstName,
+                getQuestionsInput.MiddleName,
+                getQuestionsInput.LastName,
+                getQuestionsInput.StateProvinceCode,
+                getQuestionsInput.DateOfBirth,
+                getQuestionsInput.PhoneNumber,
+                getQuestionsInput.Ssn,
+                getQuestionsInput.Street,
+                getQuestionsInput.Street2,
+                getQuestionsInput.City,
+                getQuestionsInput.ZipCode,
+                getQuestionsInput.Email,
+                getQuestionsInput.State,
+                getQuestionsInput.Gender
+            };
+
+            var result = await PostAsync<ExVerificationQuestionsResponse, ExGeneralErrorResponse>("api/v2/sso/linkviaexperian", payload);
             return result;
         }
-        public async Task<(bool successful, ExperianVerificationResponse? response, ExperianErrorResponse? error)> SubmitAnswers(ExperianAnswers? answers)
+        public async Task<(bool successful, ExAnswerVerificationResponse? response, ExGeneralErrorResponse? error)> SubmitAnswers(ValidateUserAnswersInput validateAnswersInput)
         {
-            var result = await PostAsync<ExperianVerificationResponse, ExperianErrorResponse>("api/v2/sso/submitanswerstoexperian", answers);
+            var payload = new
+            {
+                validateAnswersInput.SessionId,
+                AnswerIndex = validateAnswersInput.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
+                validateAnswersInput.ProfileId
+            };
+
+            var result = await PostAsync<ExAnswerVerificationResponse, ExGeneralErrorResponse>("api/v2/sso/submitanswerstoexperian", payload);
+            return result;
+        }
+
+        public async Task<(bool successful, ExUserInfo? response, ExGeneralErrorResponse? error)> GetUserDetails(GetUserDetailsInput getUserDetailsInput)
+        {
+            var payload = new
+            {
+                DateOfBirth = getUserDetailsInput.DateofBirth,
+                MyChartActivationCode = getUserDetailsInput.ActivationCode
+            };
+
+            var result = await PostAsync<ExUserInfo, ExGeneralErrorResponse>("api/v2/sso/fetchuserepicprofiledetails", payload);
             return result;
         }
 
@@ -52,7 +91,7 @@ namespace IntermediateAPI.Services
                                 return (true, responseBody, default);
 
                             }
-                            catch(Exception)
+                            catch (Exception)
                             {
                                 try
                                 {

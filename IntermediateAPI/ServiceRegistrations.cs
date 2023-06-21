@@ -1,5 +1,4 @@
 ﻿using IntermediateAPI.Models;
-using IntermediateAPI.Models.UserValidation;
 using IntermediateAPI.Services;
 using IntermediateAPI.Utilities;
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace IntermediateAPI.Models.Api
+namespace IntermediateAPI.Models.External.Dfp
 {
     public class Score
     {

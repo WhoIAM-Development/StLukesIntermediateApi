@@ -1,10 +1,6 @@
-﻿namespace IntermediateAPI.Models.UserValidation
+﻿namespace IntermediateAPI.Models.External.Experian
 {
-    public class ExperianVerificationResponse
-    {
-        public bool IsIdentityVerified { get; set; }
-    }
-    public class ExperianErrorResponse
+    public class ExGeneralErrorResponse
     {
         public int? ErrorCode { get; set; }
         public string? Message { get; set; }

@@ -1,4 +1,6 @@
-﻿namespace IntermediateAPI.Models.UserValidation
+﻿using IntermediateAPI.Models.External.Experian;
+
+namespace IntermediateAPI.Models
 {
     public class ValidateUserAnswersInput
     {

@@ -1,5 +1,5 @@
 ﻿using IntermediateAPI.Models;
-using IntermediateAPI.Models.UserValidation;
+using IntermediateAPI.Models.External.Experian;
 using IntermediateAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,23 +18,11 @@ namespace IntermediateAPI.Controllers
         {
             this.service = service;
         }
+
         [HttpPost]
-        public async Task<IActionResult> Question([FromBody] UserInfo userInfo)
+        public async Task<IActionResult> Question([FromBody] GetVerificationQuestionsInput getQuestionsInput)
         {
-            var response = await service.GetQuestions(userInfo);
-            if(response.successful)
-            {
-                return Ok(response.response);
-            }
-            else
-            {
-                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
-            }
-        }
-        [HttpPost]
-        public async Task<IActionResult> Answer([FromBody] ValidateUserAnswersInput answers)
-        {
-            var response = await service.SubmitAnswers(answers.ToExperianAnswers());
+            var response = await service.GetQuestions(getQuestionsInput);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -44,5 +32,34 @@ namespace IntermediateAPI.Controllers
                 return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Answer([FromBody] ValidateUserAnswersInput answers)
+        {
+            var response = await service.SubmitAnswers(answers);
+            if (response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetUserDetails([FromBody] GetUserDetailsInput input)
+        {
+            var response = await service.GetUserDetails(input);
+            if (response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
+            }
+        }
+        
     }
 }

@@ -1,6 +1,6 @@
 ﻿using IntermediateAPI.Extensions;
 using IntermediateAPI.Models;
-using IntermediateAPI.Models.Api;
+using IntermediateAPI.Models.External.Dfp;
 using IntermediateAPI.Utilities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;

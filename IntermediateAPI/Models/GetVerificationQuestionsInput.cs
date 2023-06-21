@@ -1,6 +1,6 @@
-﻿namespace IntermediateAPI.Models.UserValidation
+﻿namespace IntermediateAPI.Models
 {
-    public class UserInfo
+    public class GetVerificationQuestionsInput
     {
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }

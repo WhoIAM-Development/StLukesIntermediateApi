@@ -1,4 +1,4 @@
-﻿namespace IntermediateAPI.Models.UserValidation
+﻿namespace IntermediateAPI.Models
 {
     public class ExperianSettings
     {

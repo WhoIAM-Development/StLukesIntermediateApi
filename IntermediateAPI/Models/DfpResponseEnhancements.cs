@@ -1,4 +1,4 @@
-﻿using IntermediateAPI.Models.Api;
+﻿using IntermediateAPI.Models.External.Dfp;
 using System;
 using System.Collections.Generic;
 using System.Text;
