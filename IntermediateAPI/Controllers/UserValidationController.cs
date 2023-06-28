@@ -39,8 +39,7 @@ namespace IntermediateAPI.Controllers
             var response = await service.SubmitAnswers(answers);
             if (response.successful)
             {
-                // TODO For some reason, it does not seem that the response is not being passthrough.
-                return Ok(new ExAnswerVerificationResponse() { IsIdentityVerified = true, MyChartId = response.response?.MyChartId });  
+                return Ok(response.response);
             }
             else
             {
