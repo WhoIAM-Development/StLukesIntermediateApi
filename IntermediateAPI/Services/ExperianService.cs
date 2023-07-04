@@ -38,7 +38,8 @@ namespace IntermediateAPI.Services
                 getQuestionsInput.ZipCode,
                 getQuestionsInput.Email,
                 getQuestionsInput.State,
-                getQuestionsInput.Gender
+                getQuestionsInput.Gender,
+                getQuestionsInput.ObjectId
             };
 
             var result = await PostAsync<ExVerificationQuestionsResponse, ExGeneralErrorResponse>("api/v2/sso/linkviaexperian", payload);
@@ -50,7 +51,8 @@ namespace IntermediateAPI.Services
             {
                 validateAnswersInput.SessionId,
                 AnswerIndex = validateAnswersInput.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
-                validateAnswersInput.ProfileId
+                validateAnswersInput.ProfileId,
+                validateAnswersInput.ObjectId
             };
 
             var result = await PostAsync<ExAnswerVerificationResponse, ExGeneralErrorResponse>("api/v2/sso/submitanswerstoexperian", payload);
@@ -113,11 +115,12 @@ namespace IntermediateAPI.Services
                 validateUserDetailsInput.Gender
             };
 
-            var result = await PostAsync<object, ExGeneralErrorResponse>("api/v3/user/create", payload);
-            return result;
+            var result = await PostAsync<dynamic, ExGeneralErrorResponse>("api/v3/user/create", payload);
+            return (result.successful, result.error);
         }
 
         #region API Calls
+
         private async Task<(bool successful, SuccessType? response, FailureType? error)> PostAsync<SuccessType, FailureType>(string endpoint, object? data)
         {
             try
@@ -135,7 +138,15 @@ namespace IntermediateAPI.Services
                             try
                             {
                                 response.EnsureSuccessStatusCode();
-                                var responseBody = await response.Content.ReadFromJsonAsync<SuccessType>();
+
+                                var responseContent = await response.Content.ReadAsStringAsync();
+
+                                if (string.IsNullOrEmpty(responseContent))
+                                {
+                                    return (true, default, default);
+                                }
+
+                                var responseBody = JsonConvert.DeserializeObject<SuccessType>(responseContent);
                                 return (true, responseBody, default);
 
                             }

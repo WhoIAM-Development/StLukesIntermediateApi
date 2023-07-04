@@ -88,7 +88,7 @@ namespace IntermediateAPI.Controllers
 
             if (response.successful)
             {
-                return Ok(response.response);
+                return Ok();
             }
             else
             {
