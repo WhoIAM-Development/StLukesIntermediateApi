@@ -69,6 +69,54 @@ namespace IntermediateAPI.Services
             return result;
         }
 
+        public async Task<(bool successful, ExValidateUserDetailsResult? response, ExGeneralErrorResponse? error)> ValidateUserDetails(ValidateUserDetailsInput validateUserDetailsInput)
+        {
+            var payload = new
+            {
+                validateUserDetailsInput.FirstName,
+                validateUserDetailsInput.MiddleName,
+                validateUserDetailsInput.LastName,
+                validateUserDetailsInput.StateProvinceCode,
+                validateUserDetailsInput.DateOfBirth,
+                validateUserDetailsInput.PhoneNumber,
+                validateUserDetailsInput.Ssn,
+                validateUserDetailsInput.Street,
+                validateUserDetailsInput.Street2,
+                validateUserDetailsInput.City,
+                validateUserDetailsInput.ZipCode,
+                validateUserDetailsInput.Email,
+                validateUserDetailsInput.State,
+                validateUserDetailsInput.Gender
+            };
+
+            var result = await PostAsync<ExValidateUserDetailsResult, ExGeneralErrorResponse>("api/v3/user/validate", payload);
+            return result;
+        }
+
+        public async Task<(bool successful, ExGeneralErrorResponse? error)> CreateUserDetails(CreateUserInput validateUserDetailsInput)
+        {
+            var payload = new
+            {
+                validateUserDetailsInput.FirstName,
+                validateUserDetailsInput.MiddleName,
+                validateUserDetailsInput.LastName,
+                validateUserDetailsInput.StateProvinceCode,
+                validateUserDetailsInput.DateOfBirth,
+                validateUserDetailsInput.PhoneNumber,
+                validateUserDetailsInput.Ssn,
+                validateUserDetailsInput.Street,
+                validateUserDetailsInput.Street2,
+                validateUserDetailsInput.City,
+                validateUserDetailsInput.ZipCode,
+                validateUserDetailsInput.Email,
+                validateUserDetailsInput.State,
+                validateUserDetailsInput.Gender
+            };
+
+            var result = await PostAsync<object, ExGeneralErrorResponse>("api/v3/user/create", payload);
+            return result;
+        }
+
         #region API Calls
         private async Task<(bool successful, SuccessType? response, FailureType? error)> PostAsync<SuccessType, FailureType>(string endpoint, object? data)
         {
@@ -118,6 +166,7 @@ namespace IntermediateAPI.Services
                 throw;
             }
         }
+
         private async Task<(bool successful, SuccessType? response, object? error)> PostAsync<SuccessType>(string endpoint, object data)
         {
             return await PostAsync<SuccessType, object>(endpoint, data);
