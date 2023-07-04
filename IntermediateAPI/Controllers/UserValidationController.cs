@@ -51,6 +51,7 @@ namespace IntermediateAPI.Controllers
         public async Task<IActionResult> GetUserDetails([FromBody] GetUserDetailsInput input)
         {
             var response = await service.GetUserDetails(input);
+
             if (response.successful)
             {
                 return Ok(response.response);
@@ -60,6 +61,35 @@ namespace IntermediateAPI.Controllers
                 return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
             }
         }
-        
+
+        [HttpPost]
+        public async Task<IActionResult> ValidateUserDetails([FromBody] ValidateUserDetailsInput input)
+        {
+            var response = await service.ValidateUserDetails(input);
+
+            if (response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserInput input)
+        {
+            var response = await service.CreateUserDetails(input);
+
+            if (response.successful)
+            {
+                return Ok(response.response);
+            }
+            else
+            {
+                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
+            }
+        }
     }
 }
