@@ -18,6 +18,10 @@ namespace IntermediateAPI
             {
                 configuration.GetSection("ExperianSettings").Bind(settings);
             });
+            services.AddOptions<ExternalApisSettings>().Configure<IConfiguration>((settings, configuration) =>
+            {
+                configuration.GetSection("ExternalApisSettings").Bind(settings);
+            });
 
             services.AddSingleton<ExperianService>();
 
