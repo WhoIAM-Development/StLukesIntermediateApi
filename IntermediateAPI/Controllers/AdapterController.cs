@@ -121,9 +121,10 @@ namespace IntermediateAPI.Controllers
 
         }
 
+        [HttpPost]
         public async Task<IActionResult> GetUser(UserObjectId userObjectId)
         {
-            var response = await userClient.GetAsync<UserProfileResponse, ErrorResponse>($"/user/{userObjectId?.ObjectId}", null);
+            var response = await userClient.GetAsync<UserDemographicsResponse, ErrorResponse>($"/user/{userObjectId?.ObjectId}", null);
             if (response.successful)
             {
                 return Ok(response);
