@@ -50,7 +50,7 @@ namespace IntermediateAPI.Controllers
             var response = await activationClient.PostAsync<LinkAccountResponse, ErrorResponse>("/api/v3/activation/linkmycharttoaccount", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
@@ -65,7 +65,7 @@ namespace IntermediateAPI.Controllers
             var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/linkviaexperian", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
@@ -80,7 +80,7 @@ namespace IntermediateAPI.Controllers
             var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
@@ -98,7 +98,7 @@ namespace IntermediateAPI.Controllers
             var response = await userClient.PostAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
@@ -112,7 +112,7 @@ namespace IntermediateAPI.Controllers
             var response = await userClient.PutAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
@@ -127,7 +127,7 @@ namespace IntermediateAPI.Controllers
             var response = await userClient.GetAsync<UserDemographicsResponse, ErrorResponse>($"/api/v4/user/{userObjectId?.ObjectId}", null);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
