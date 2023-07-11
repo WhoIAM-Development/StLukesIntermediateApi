@@ -32,7 +32,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUserWithActivationCode(FetchUserDetailsInput request)
         {
-            var response = await activationClient.PostAsync<UserDemographicsResponse, ErrorResponse>("/fetchuserepicprofiledetails", request);
+            var response = await activationClient.PostAsync<UserDemographicsResponse, ErrorResponse>("/api/v3/activation/fetchuserepicprofiledetails", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -47,7 +47,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> LinkUserWithActivationCode(LinkAccountRequest request)
         {
-            var response = await activationClient.PostAsync<LinkAccountResponse, ErrorResponse>("/linkmycharttoaccount", request);
+            var response = await activationClient.PostAsync<LinkAccountResponse, ErrorResponse>("/api/v3/activation/linkmycharttoaccount", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -62,7 +62,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetQuestions(UserProfileRequest request) 
         {
-            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/linkviaexperian", request);
+            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/linkviaexperian", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -77,7 +77,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitAnswers(VerifyAnswersInput request) 
         {
-            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/submitanswerstoexperian", request);
+            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -95,7 +95,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserProfileRequest request)
         {
-            var response = await userClient.PostAsync<UserProfileResponse, ErrorResponse>("/user", request);
+            var response = await userClient.PostAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -109,7 +109,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateUser(UserProfileRequest request) 
         {
-            var response = await userClient.PutAsync<UserProfileResponse, ErrorResponse>("/user", request);
+            var response = await userClient.PutAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -124,7 +124,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUser(UserObjectId userObjectId)
         {
-            var response = await userClient.GetAsync<UserDemographicsResponse, ErrorResponse>($"/user/{userObjectId?.ObjectId}", null);
+            var response = await userClient.GetAsync<UserDemographicsResponse, ErrorResponse>($"/api/v4/user/{userObjectId?.ObjectId}", null);
             if (response.successful)
             {
                 return Ok(response);
