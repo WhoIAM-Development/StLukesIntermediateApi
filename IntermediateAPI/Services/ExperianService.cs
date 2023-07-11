@@ -127,7 +127,7 @@ namespace IntermediateAPI.Services
             {
                 //var url = $"{settings.ApiBaseUrl}/{endpoint}";
                 //var jsonContent = JsonConvert.SerializeObject(data);
-                logger.LogInformation("Sending Request to {url}. Content: {data}", endpoint, data);
+                logger.LogInformation($"Sending Request to {endpoint}. Content: {data}", endpoint, data);
                 using (var request = new HttpRequestMessage(HttpMethod.Post, endpoint))
                 {
                     using (var content = JsonContent.Create(data))
@@ -155,7 +155,7 @@ namespace IntermediateAPI.Services
                                 try
                                 {
                                     var responseBody = await response.Content.ReadFromJsonAsync<FailureType>();
-                                    logger.LogError("Request was unsuccessful. Response: {responseBody}", responseBody);
+                                    logger.LogError($"Request was unsuccessful. Response: {responseBody}", responseBody);
                                     return (false, default, responseBody);
 
                                 }
@@ -163,7 +163,7 @@ namespace IntermediateAPI.Services
                                 {
                                     var statusCode = response.StatusCode;
                                     var responseString = await response.Content.ReadAsStringAsync();
-                                    logger.LogError("Error: {statusCode}. The upstream server has returned an enexpected response: {responseString}", statusCode, responseString);
+                                    logger.LogError($"Error: {statusCode}. The upstream server has returned an unexpected response: {responseString}", statusCode, responseString);
                                     throw;
                                 }
                             }
