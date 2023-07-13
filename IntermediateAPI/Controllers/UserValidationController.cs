@@ -46,7 +46,7 @@ namespace IntermediateAPI.Controllers
                 return Ok(new ExAnswerVerificationResponse()
                 {
                     IsIdentityVerified = false,
-                    MyChartId = null
+                    MyChartUserId = null
                 });
             }
         }

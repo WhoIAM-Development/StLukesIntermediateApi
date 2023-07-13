@@ -7,6 +7,6 @@ namespace IntermediateAPI.Models.External
         public bool HasMyChartBeenLinked { get; set; }
 
         [Required]
-        public string? MyChartId { get; set; }
+        public string? MyChartUserId { get; set; }
     }
 }

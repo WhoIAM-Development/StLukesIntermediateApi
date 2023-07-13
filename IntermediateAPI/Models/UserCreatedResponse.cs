@@ -1,6 +1,6 @@
-﻿namespace IntermediateAPI.Models.External
+﻿namespace IntermediateAPI.Models
 {
-    public class UserProfileResponse
+    public class UserCreatedResponse
     {
         public string Message { get; set; }
         public string? MyChartUserId { get; set; }

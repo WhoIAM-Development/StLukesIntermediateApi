@@ -32,7 +32,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUserWithActivationCode(FetchUserDetailsInput request)
         {
-            var response = await activationClient.PostAsync<UserDemographicsResponse, ErrorResponse>("/api/v3/activation/fetchuserepicprofiledetails", request);
+            var response = await activationClient.PostAsync<UserProfile, ErrorResponse>("/api/v3/activation/fetchuserepicprofiledetails", request);
             if (response.successful)
             {
                 return Ok(response);
@@ -60,7 +60,7 @@ namespace IntermediateAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetQuestions(UserProfileRequest request) 
+        public async Task<IActionResult> GetQuestions(ExperianUserProfile request) 
         {
             var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/linkviaexperian", request);
             if (response.successful)
@@ -77,7 +77,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitAnswers(VerifyAnswersInput request) 
         {
-            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
+            var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -87,15 +87,15 @@ namespace IntermediateAPI.Controllers
                 return Ok(new ExAnswerVerificationResponse()
                 {
                     IsIdentityVerified = false,
-                    MyChartId = null
+                    MyChartUserId = null
                 });
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(UserProfileRequest request)
+        public async Task<IActionResult> CreateUser(UserProfile request)
         {
-            var response = await userClient.PostAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
+            var response = await userClient.PostAsync<UserCreatedResponse, ErrorResponse>("/api/v4/user", request);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -104,27 +104,12 @@ namespace IntermediateAPI.Controllers
             {
                 return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
             }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateUser(UserProfileRequest request) 
-        {
-            var response = await userClient.PutAsync<UserProfileResponse, ErrorResponse>("/api/v4/user", request);
-            if (response.successful)
-            {
-                return Ok(response.response);
-            }
-            else
-            {
-                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
-            }
-
         }
 
         [HttpPost]
         public async Task<IActionResult> GetUser(UserObjectId userObjectId)
         {
-            var response = await userClient.GetAsync<UserDemographicsResponse, ErrorResponse>($"/api/v4/user/{userObjectId?.ObjectId}", null);
+            var response = await userClient.GetAsync<UserProfile, ErrorResponse>($"/api/v4/user/{userObjectId?.ObjectId}", null);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -135,7 +120,5 @@ namespace IntermediateAPI.Controllers
             }
 
         }
-
-
     }
 }

@@ -2,23 +2,25 @@
 
 namespace IntermediateAPI.Models.External
 {
-    public class UserProfileRequest
+    public class ExperianUserProfile
     {
         [Required]
         public string ObjectId { get; set; }
-        [Required]
-        public string Email { get; set; }
+        public string? Email { get; set; }
         [Required]
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
         [Required]
         public string LastName { get; set; }
+        /// <summary>
+        /// "dateOfBirth":"1976-06-17"
+        /// </summary>
         [Required]
         public string DateOfBirth { get; set; }
+        public string? Gender { get; set; }
         [Required]
-        public string Gender { get; set; }
-        [Required]
-        public string Address { get; set; }
+        public string Street { get; set; }
+        public string? Street2 { get; set; }
         [Required]
         public string City { get; set; }
         [Required]
@@ -27,8 +29,5 @@ namespace IntermediateAPI.Models.External
         public string ZipCode { get; set; }
         [Required]
         public string PhoneNumber { get; set; }
-
-        public string? MyChartActivationCode { get; set; }
-
     }
 }

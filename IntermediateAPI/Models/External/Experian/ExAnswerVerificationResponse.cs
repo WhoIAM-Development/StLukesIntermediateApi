@@ -4,6 +4,6 @@
     {
         public bool IsIdentityVerified { get; set; }
 
-        public string? MyChartId { get; set; }
+        public string? MyChartUserId { get; set; }
     }
 }
