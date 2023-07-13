@@ -35,7 +35,7 @@ namespace IntermediateAPI.Controllers
             var response = await activationClient.PostAsync<UserProfile, ErrorResponse>("/api/v3/activation/fetchuserepicprofiledetails", request);
             if (response.successful)
             {
-                return Ok(response);
+                return Ok(response.response);
             }
             else
             {
