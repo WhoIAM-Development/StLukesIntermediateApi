@@ -39,7 +39,7 @@ namespace IntermediateAPI.Extensions
         {
             try
             {
-                Log.Logger.Information($"Sending Request to {endpoint}. Content: {data}", endpoint, data);
+                Log.Logger.Information("Sending Request to {endpoint}. Content: {@data}", endpoint, data);
                 using var request = new HttpRequestMessage(method, endpoint);
                 using var content = JsonContent.Create(data);
                 request.Content = content;
@@ -49,7 +49,7 @@ namespace IntermediateAPI.Extensions
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
-                        Log.Logger.Information($"Received Respose Content: {responseContent}");
+                        Log.Logger.Information("Received Respose Content: {responseContent}", responseContent);
 
                         if (string.IsNullOrEmpty(responseContent))
                         {
@@ -62,7 +62,7 @@ namespace IntermediateAPI.Extensions
                     else
                     {
                         var responseBody = await response.Content.ReadFromJsonAsync<FailureType>();
-                        Log.Logger.Warning($"Request was unsuccessful. Response: {responseBody}", responseBody);
+                        Log.Logger.Warning("Request was unsuccessful. Response: {@responseBody}", responseBody);
                         return (false, default, responseBody);
                     }
                 }
@@ -70,7 +70,7 @@ namespace IntermediateAPI.Extensions
                 {
                     var statusCode = response.StatusCode;
                     var responseString = await response.Content.ReadAsStringAsync();
-                    Log.Logger.Error($"Error: {statusCode}. The upstream server has returned an unexpected response: {responseString}", statusCode, responseString);
+                    Log.Logger.Error("Error: {statusCode}. The upstream server has returned an unexpected response: {responseString}", statusCode, responseString);
                     throw;
                 }
             }
