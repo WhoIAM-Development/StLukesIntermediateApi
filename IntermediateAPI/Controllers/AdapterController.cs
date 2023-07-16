@@ -77,11 +77,10 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitAnswers(ValidateUserAnswersInput request) 
         {
-            var payload = new
+            var payload = new VerifyAnswersInput
             {
-                request.SessionId,
-                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
-                request.ObjectId
+                SessionId =  request.SessionId,
+                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList()
             };
 
             var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
