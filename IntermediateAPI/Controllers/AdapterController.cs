@@ -75,8 +75,15 @@ namespace IntermediateAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitAnswers(VerifyAnswersInput request) 
+        public async Task<IActionResult> SubmitAnswers(ValidateUserAnswersInput request) 
         {
+            var payload = new
+            {
+                request.SessionId,
+                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
+                request.ObjectId
+            };
+
             var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
             if (response.successful)
             {
