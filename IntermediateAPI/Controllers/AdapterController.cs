@@ -83,7 +83,7 @@ namespace IntermediateAPI.Controllers
                 AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList()
             };
 
-            var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", request);
+            var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", payload);
             if (response.successful)
             {
                 return Ok(response.response);
