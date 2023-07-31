@@ -1,4 +1,5 @@
-﻿using B2CIntermediateAPI.Services;
+﻿using B2CIntermediateAPI.Models.Services.Graph;
+using B2CIntermediateAPI.Services;
 using IntermediateAPI.Models;
 using IntermediateAPI.Services;
 using IntermediateAPI.Utilities;
@@ -22,6 +23,10 @@ namespace IntermediateAPI
             services.AddOptions<ExternalApisSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration.GetSection("ExternalApisSettings").Bind(settings);
+            });
+            services.AddOptions<AzureAdB2COptions>().Configure<IConfiguration>((settings, configuration) =>
+            {
+                configuration.GetSection("AzureAdB2C").Bind(settings);
             });
 
             services.AddSingleton<ExperianService>();
