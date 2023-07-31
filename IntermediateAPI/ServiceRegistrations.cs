@@ -1,4 +1,5 @@
-﻿using IntermediateAPI.Models;
+﻿using B2CIntermediateAPI.Services;
+using IntermediateAPI.Models;
 using IntermediateAPI.Services;
 using IntermediateAPI.Utilities;
 
@@ -24,6 +25,7 @@ namespace IntermediateAPI
             });
 
             services.AddSingleton<ExperianService>();
+            services.AddSingleton<GraphService>();
 
 
             services.AddOptions<TokenProviderServiceSettings>().Configure<IConfiguration>((settings, configuration) =>
