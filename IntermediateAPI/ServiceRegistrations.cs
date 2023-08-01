@@ -29,7 +29,7 @@ namespace IntermediateAPI
                 configuration.GetSection("AzureAdB2C").Bind(settings);
             });
 
-            services.AddSingleton<ExperianService>();
+            services.AddSingleton<AdapterService>();
             services.AddSingleton<GraphService>();
 
 

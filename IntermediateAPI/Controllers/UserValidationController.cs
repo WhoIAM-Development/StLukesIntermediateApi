@@ -12,9 +12,9 @@ namespace IntermediateAPI.Controllers
     [AllowAnonymous]
     public class UserValidationController : ControllerBase
     {
-        private readonly ExperianService service;
+        private readonly AdapterService service;
 
-        public UserValidationController(ExperianService service)
+        public UserValidationController(AdapterService service)
         {
             this.service = service;
         }

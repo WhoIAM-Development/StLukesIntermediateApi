@@ -9,12 +9,12 @@ using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext
 
 namespace IntermediateAPI.Services
 {
-    public class ExperianService
+    public class AdapterService
     {
         private readonly HttpClient client;
         private readonly ExperianSettings settings;
-        private readonly ILogger<ExperianService> logger;
-        public ExperianService(IHttpClientFactory factory, IOptions<ExperianSettings> options, ILogger<ExperianService> logger)
+        private readonly ILogger<AdapterService> logger;
+        public AdapterService(IHttpClientFactory factory, IOptions<ExperianSettings> options, ILogger<AdapterService> logger)
         {
             client = factory.CreateClient();
             settings = options.Value;
