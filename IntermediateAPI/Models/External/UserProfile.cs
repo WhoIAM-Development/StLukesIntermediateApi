@@ -4,7 +4,7 @@ namespace IntermediateAPI.Models.External
 {
     public class UserProfile
     {
-        public string? ObjectId { get; set; }
+        public string? B2CObjectId { get; set; }
         [Required]
         public string Email { get; set; }
         [Required]

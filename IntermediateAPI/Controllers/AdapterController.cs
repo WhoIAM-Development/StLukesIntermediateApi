@@ -79,7 +79,8 @@ namespace IntermediateAPI.Controllers
             var payload = new VerifyAnswersInput
             {
                 SessionId =  request.SessionId,
-                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList()
+                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
+                B2CObjectId = request.B2CObjectId
             };
 
             var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", payload);

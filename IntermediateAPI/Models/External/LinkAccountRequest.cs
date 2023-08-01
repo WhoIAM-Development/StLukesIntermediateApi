@@ -8,6 +8,9 @@ namespace IntermediateAPI.Models.External
         public string MyChartActivationCode { get; set; }
 
         [Required]
-        public string ObjectId { get; set; }
+        public string DateOfBirth { get; set; }
+
+        [Required]
+        public string B2CObjectId { get; set; }
     }
 }
