@@ -1,4 +1,4 @@
-﻿namespace IntermediateAPI.Models.External.Experian
+﻿namespace IntermediateAPI.Models.External
 {
     public class ExAnswerVerificationResponse
     {

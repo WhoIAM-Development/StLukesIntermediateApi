@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using IntermediateAPI.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using IntermediateAPI.Models.External.Experian;
 
 namespace IntermediateAPI.Controllers
 {
