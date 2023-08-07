@@ -1,4 +1,5 @@
-﻿using IntermediateAPI.Models;
+﻿using IntermediateAPI.Extensions;
+using IntermediateAPI.Models;
 using IntermediateAPI.Models.External;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, ExperianQuestions? response, ErrorResponse? error)> GetQuestions(ExperianUserProfile getQuestionsInput)
         {
-            var result = await PostAsync<ExperianQuestions, ErrorResponse>("api/v1/B2C/getExperianQuestions", getQuestionsInput);
+            var result = await client.PostAsync<ExperianQuestions, ErrorResponse>("api/v1/B2C/getExperianQuestions", getQuestionsInput);
             
             return result;
         }
@@ -34,13 +35,13 @@ namespace IntermediateAPI.Services
                 B2CObjectId = request.B2CObjectId
             };
 
-            var result = await PostAsync<ExAnswerVerificationResponse, ErrorResponse>("/api/v1/B2C/submitAnswersToExperianToLinkAccount", payload);
+            var result = await client.PostAsync<ExAnswerVerificationResponse, ErrorResponse>("/api/v1/B2C/submitAnswersToExperianToLinkAccount", payload);
             return result;
         }
 
         public async Task<(bool successful, LinkAccountResponse? response, ErrorResponse? error)> LinkUserWithActivationCode(LinkAccountRequest request)
         {
-            var result = await PostAsync<LinkAccountResponse, ErrorResponse>("/api/v1/B2C/linkAccountWithActivationCode", request);
+            var result = await client.PostAsync<LinkAccountResponse, ErrorResponse>("/api/v1/B2C/linkAccountWithActivationCode", request);
             return result;
         }
 
@@ -48,20 +49,20 @@ namespace IntermediateAPI.Services
         public async Task<(bool successful, UserProfile? response, ErrorResponse? error)> GetUserDetailsWithActivationCode(FetchUserDetailsInput getUserDetailsInput)
         {
 
-            var result = await PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/getEpicDemographicsWithActivationCode", getUserDetailsInput);
+            var result = await client.PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/getEpicDemographicsWithActivationCode", getUserDetailsInput);
             return result;
         }
 
         public async Task<(bool successful, UserCreatedResponse? response, ErrorResponse? error)> CreateUser(UserProfile validateUserDetailsInput)
         {
-            var result = await PostAsync<UserCreatedResponse, ErrorResponse>("/api/v1/B2C/user/create", validateUserDetailsInput);
+            var result = await client.PostAsync<UserCreatedResponse, ErrorResponse>("/api/v1/B2C/user/create", validateUserDetailsInput);
 
             return result;
         }
 
         public async Task<(bool successful, UserProfile? response, ErrorResponse? error)> GetUser(UserObjectId userObjectId)
         {
-            var result = await PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/user/profile", userObjectId);
+            var result = await client.PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/user/profile", userObjectId);
 
             return result;
         }
@@ -74,7 +75,7 @@ namespace IntermediateAPI.Services
             {
                 //var url = $"{settings.ApiBaseUrl}/{endpoint}";
                 //var jsonContent = JsonConvert.SerializeObject(data);
-                logger.LogInformation($"Sending Request to {endpoint}. Content: {data}", endpoint, data);
+                logger.LogInformation("Sending Request to {endpoint}. Content: {@data}", endpoint, data);
                 using (var request = new HttpRequestMessage(HttpMethod.Post, endpoint))
                 {
                     using (var content = JsonContent.Create(data))
