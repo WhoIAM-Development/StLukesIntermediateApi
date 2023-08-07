@@ -1,4 +1,4 @@
-﻿
+﻿using IntermediateAPI.Models.External.Experian;
 
 namespace IntermediateAPI.Models
 {
