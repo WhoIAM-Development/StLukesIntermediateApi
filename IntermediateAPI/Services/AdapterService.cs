@@ -21,7 +21,7 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, ExperianQuestions? response, ErrorResponse? error)> GetQuestions(ExperianUserProfile getQuestionsInput)
         {
-            var result = await client.PostAsync<ExperianQuestions, ErrorResponse>("api/v1/B2C/getExperianQuestions", getQuestionsInput);
+            var result = await client.PostAsync<ExperianQuestions, ErrorResponse>("/api/v1/B2C/getExperianQuestions", getQuestionsInput);
             
             return result;
         }
