@@ -2,7 +2,6 @@
 {
     public class ExternalApisSettings
     {
-        public string? UserApiBaseUrl { get; set; }
-        public string? ActivationApiBaseUrl { get; set; }
+        public string? ApiBaseUrl { get; set; }
     }
 }

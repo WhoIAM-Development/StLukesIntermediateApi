@@ -5,6 +5,6 @@ namespace IntermediateAPI.Models
     public class UserObjectId
     {
         [Required]
-        public string ObjectId { get; set; }
+        public string B2CObjectId { get; set; }
     }
 }

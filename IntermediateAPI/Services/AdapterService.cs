@@ -1,122 +1,69 @@
 ﻿using IntermediateAPI.Models;
-using IntermediateAPI.Models.External.Experian;
+using IntermediateAPI.Models.External;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace IntermediateAPI.Services
 {
     public class AdapterService
     {
         private readonly HttpClient client;
-        private readonly ExperianSettings settings;
+        private readonly ExternalApisSettings settings;
         private readonly ILogger<AdapterService> logger;
-        public AdapterService(IHttpClientFactory factory, IOptions<ExperianSettings> options, ILogger<AdapterService> logger)
+        public AdapterService(IHttpClientFactory factory, IOptions<ExternalApisSettings> options, ILogger<AdapterService> logger)
         {
             client = factory.CreateClient();
             settings = options.Value;
             this.logger = logger;
             client.BaseAddress = new Uri(settings?.ApiBaseUrl ?? "");
         }
-        public async Task<(bool successful, ExVerificationQuestionsResponse? response, ExGeneralErrorResponse? error)> GetQuestions(GetVerificationQuestionsInput getQuestionsInput)
-        {
-            var payload = new
-            {
-                getQuestionsInput.FirstName,
-                getQuestionsInput.MiddleName,
-                getQuestionsInput.LastName,
-                getQuestionsInput.StateProvinceCode,
-                getQuestionsInput.DateOfBirth,
-                getQuestionsInput.PhoneNumber,
-                getQuestionsInput.Ssn,
-                getQuestionsInput.Street,
-                getQuestionsInput.Street2,
-                getQuestionsInput.City,
-                getQuestionsInput.ZipCode,
-                getQuestionsInput.Email,
-                getQuestionsInput.State,
-                getQuestionsInput.Gender,
-                getQuestionsInput.ObjectId
-            };
 
-            var result = await PostAsync<ExVerificationQuestionsResponse, ExGeneralErrorResponse>("api/v2/sso/linkviaexperian", payload);
-            return result;
-        }
-        public async Task<(bool successful, ExAnswerVerificationResponse? response, ExGeneralErrorResponse? error)> SubmitAnswers(ValidateUserAnswersInput validateAnswersInput)
+        public async Task<(bool successful, ExperianQuestions? response, ErrorResponse? error)> GetQuestions(ExperianUserProfile getQuestionsInput)
         {
-            var payload = new
-            {
-                validateAnswersInput.SessionId,
-                AnswerIndex = validateAnswersInput.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
-                validateAnswersInput.ProfileId,
-                validateAnswersInput.ObjectId
-            };
-
-            var result = await PostAsync<ExAnswerVerificationResponse, ExGeneralErrorResponse>("api/v2/sso/submitanswerstoexperian", payload);
+            var result = await PostAsync<ExperianQuestions, ErrorResponse>("api/v1/B2C/getExperianQuestions", getQuestionsInput);
+            
             return result;
         }
 
-        public async Task<(bool successful, ExUserInfo? response, ExGeneralErrorResponse? error)> GetUserDetails(GetUserDetailsInput getUserDetailsInput)
+        public async Task<(bool successful, ExAnswerVerificationResponse? response, ErrorResponse? error)> SubmitAnswers(ValidateUserAnswersInput request)
         {
-            var payload = new
+            var payload = new VerifyAnswersInput
             {
-                DateOfBirth = getUserDetailsInput.DateofBirth,
-                MyChartActivationCode = getUserDetailsInput.ActivationCode
+                SessionId = request.SessionId,
+                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
+                B2CObjectId = request.B2CObjectId
             };
 
-            var result = await PostAsync<ExUserInfo, ExGeneralErrorResponse>("api/v2/sso/fetchuserepicprofiledetails", payload);
+            var result = await PostAsync<ExAnswerVerificationResponse, ErrorResponse>("/api/v1/B2C/submitAnswersToExperianToLinkAccount", payload);
             return result;
         }
 
-        public async Task<(bool successful, ExValidateUserDetailsResult? response, ExGeneralErrorResponse? error)> ValidateUserDetails(ValidateUserDetailsInput validateUserDetailsInput)
+        public async Task<(bool successful, LinkAccountResponse? response, ErrorResponse? error)> LinkUserWithActivationCode(LinkAccountRequest request)
         {
-            var payload = new
-            {
-                validateUserDetailsInput.FirstName,
-                validateUserDetailsInput.MiddleName,
-                validateUserDetailsInput.LastName,
-                validateUserDetailsInput.StateProvinceCode,
-                validateUserDetailsInput.DateOfBirth,
-                validateUserDetailsInput.PhoneNumber,
-                validateUserDetailsInput.Ssn,
-                validateUserDetailsInput.Street,
-                validateUserDetailsInput.Street2,
-                validateUserDetailsInput.City,
-                validateUserDetailsInput.ZipCode,
-                validateUserDetailsInput.Email,
-                validateUserDetailsInput.State,
-                validateUserDetailsInput.Gender
-            };
-
-            var result = await PostAsync<ExValidateUserDetailsResult, ExGeneralErrorResponse>("api/v3/user/validate", payload);
+            var result = await PostAsync<LinkAccountResponse, ErrorResponse>("/api/v1/B2C/linkAccountWithActivationCode", request);
             return result;
         }
 
-        public async Task<(bool successful, ExGeneralErrorResponse? error)> CreateUserDetails(CreateUserInput validateUserDetailsInput)
-        {
-            var payload = new
-            {
-                validateUserDetailsInput.FirstName,
-                validateUserDetailsInput.MiddleName,
-                validateUserDetailsInput.LastName,
-                validateUserDetailsInput.StateProvinceCode,
-                validateUserDetailsInput.DateOfBirth,
-                validateUserDetailsInput.PhoneNumber,
-                validateUserDetailsInput.Ssn,
-                validateUserDetailsInput.Street,
-                validateUserDetailsInput.Street2,
-                validateUserDetailsInput.City,
-                validateUserDetailsInput.ZipCode,
-                validateUserDetailsInput.Email,
-                validateUserDetailsInput.State,
-                validateUserDetailsInput.Gender
-            };
 
-            var result = await PostAsync<dynamic, ExGeneralErrorResponse>("api/v3/user/create", payload);
-            return (result.successful, result.error);
+        public async Task<(bool successful, UserProfile? response, ErrorResponse? error)> GetUserDetailsWithActivationCode(FetchUserDetailsInput getUserDetailsInput)
+        {
+
+            var result = await PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/getEpicDemographicsWithActivationCode", getUserDetailsInput);
+            return result;
+        }
+
+        public async Task<(bool successful, UserCreatedResponse? response, ErrorResponse? error)> CreateUser(UserProfile validateUserDetailsInput)
+        {
+            var result = await PostAsync<UserCreatedResponse, ErrorResponse>("/api/v1/B2C/user/create", validateUserDetailsInput);
+
+            return result;
+        }
+
+        public async Task<(bool successful, UserProfile? response, ErrorResponse? error)> GetUser(UserObjectId userObjectId)
+        {
+            var result = await PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/user/profile", userObjectId);
+
+            return result;
         }
 
         #region API Calls

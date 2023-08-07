@@ -16,10 +16,7 @@ namespace IntermediateAPI
             {
                 configuration.GetSection("FraudProtectionSettings").Bind(settings);
             });
-            services.AddOptions<ExperianSettings>().Configure<IConfiguration>((settings, configuration) =>
-            {
-                configuration.GetSection("ExperianSettings").Bind(settings);
-            });
+            
             services.AddOptions<ExternalApisSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration.GetSection("ExternalApisSettings").Bind(settings);

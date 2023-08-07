@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using IntermediateAPI.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using IntermediateAPI.Models.External.Experian;
+using IntermediateAPI.Services;
 
 namespace IntermediateAPI.Controllers
 {
@@ -13,26 +13,20 @@ namespace IntermediateAPI.Controllers
     [AllowAnonymous]
     public class AdapterController : ControllerBase
     {
-        private readonly HttpClient activationClient;
-        private readonly HttpClient userClient;
-        private readonly ILogger<AdapterController> logger;
+        private readonly AdapterService service;
 
-        // TODO: Add a service
-        public AdapterController(
-            IHttpClientFactory factory, IOptions<ExternalApisSettings> options, ILogger<AdapterController> logger) 
+        public AdapterController(AdapterService service) 
         {
-            activationClient = factory.CreateClient("activationClient");
-            userClient = factory.CreateClient("userClient");
-            var settings = options.Value;
-            this.logger = logger;
-            activationClient.BaseAddress = new Uri(settings?.ActivationApiBaseUrl ?? "");
-            userClient.BaseAddress = new Uri(settings?.UserApiBaseUrl ?? "");
+            this.service = service;
+
         }
 
         [HttpPost]
         public async Task<IActionResult> GetUserWithActivationCode(FetchUserDetailsInput request)
         {
-            var response = await activationClient.PostAsync<UserProfile, ErrorResponse>("/api/v3/activation/fetchuserepicprofiledetails", request);
+            var response = await service.GetUserDetailsWithActivationCode(request);
+
+
             if (response.successful)
             {
                 return Ok(response.response);
@@ -47,7 +41,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> LinkUserWithActivationCode(LinkAccountRequest request)
         {
-            var response = await activationClient.PostAsync<LinkAccountResponse, ErrorResponse>("/api/v3/activation/linkmycharttoaccount", request);
+            var response = await service.LinkUserWithActivationCode(request);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -62,7 +56,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetQuestions(ExperianUserProfile request) 
         {
-            var response = await activationClient.PostAsync<ExperianQuestions, ErrorResponse>("/api/v3/activation/linkviaexperian", request);
+            var response = await service.GetQuestions(request);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -77,32 +71,21 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitAnswers(ValidateUserAnswersInput request) 
         {
-            var payload = new VerifyAnswersInput
-            {
-                SessionId =  request.SessionId,
-                AnswerIndex = request.AnswerIndex?.Split(',').Select(int.Parse).ToList(),
-                B2CObjectId = request.B2CObjectId
-            };
-
-            var response = await activationClient.PostAsync<ExperianValidateAnswerResult, ErrorResponse>("/api/v3/activation/submitanswerstoexperian", payload);
+            var response = await service.SubmitAnswers(request);
             if (response.successful)
             {
                 return Ok(response.response);
             }
             else
             {
-                return Ok(new ExAnswerVerificationResponse()
-                {
-                    IsIdentityVerified = false,
-                    MyChartUserId = null
-                });
+                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUser(UserProfile request)
         {
-            var response = await userClient.PostAsync<UserCreatedResponse, ErrorResponse>("/api/v4/user", request);
+            var response = await service.CreateUser(request);
             if (response.successful)
             {
                 return Ok(response.response);
@@ -116,7 +99,7 @@ namespace IntermediateAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> GetUser(UserObjectId userObjectId)
         {
-            var response = await userClient.GetAsync<UserProfile, ErrorResponse>($"/api/v4/user/{userObjectId?.ObjectId}", null);
+            var response = await service.GetUser(userObjectId);
             if (response.successful)
             {
                 return Ok(response.response);
