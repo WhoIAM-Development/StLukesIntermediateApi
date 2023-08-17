@@ -54,7 +54,6 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, UserProfile? response, ErrorResponse? error)> GetUserDetailsWithActivationCode(FetchUserDetailsInput getUserDetailsInput)
         {
-
             var result = await client.PostAsync<UserProfile, ErrorResponse>("/api/v1/B2C/getEpicDemographicsWithActivationCode", getUserDetailsInput);
             
             return result;
@@ -62,10 +61,6 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, UserCreatedResponse? response, ErrorResponse? error)> CreateUser(UserProfile validateUserDetailsInput)
         {
-            if (validateUserDetailsInput?.DateOfBirth != null)
-            {
-                validateUserDetailsInput.DateOfBirth = DateFormatter.RemoveTimePart(validateUserDetailsInput.DateOfBirth);
-            }
             var result = await client.PostAsync<UserCreatedResponse, ErrorResponse>("/api/v1/B2C/user/create", validateUserDetailsInput);
 
             return result;
