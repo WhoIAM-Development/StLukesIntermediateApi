@@ -78,7 +78,11 @@ namespace IntermediateAPI.Controllers
             }
             else
             {
-                return Conflict(new B2CErrorResponseContent(response.error?.Message, response.error?.Title));
+                return Ok(new ExAnswerVerificationResponse()
+                {
+                    IsIdentityVerified = false,
+                    MyChartUserId = null
+                });
             }
         }
 
