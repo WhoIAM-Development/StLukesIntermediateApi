@@ -1,6 +1,7 @@
 ﻿using IntermediateAPI.Extensions;
 using IntermediateAPI.Models;
 using IntermediateAPI.Models.External;
+using IntermediateAPI.Utilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -21,6 +22,7 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, ExperianQuestions? response, ErrorResponse? error)> GetQuestions(ExperianUserProfile getQuestionsInput)
         {
+            getQuestionsInput.StateProvinceCode = StateCodeConverter.GetStateCode(getQuestionsInput.State);
             var result = await client.PostAsync<ExperianQuestions, ErrorResponse>("/api/v1/B2C/getExperianQuestions", getQuestionsInput);
             
             return result;

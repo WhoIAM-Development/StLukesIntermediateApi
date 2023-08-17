@@ -21,6 +21,8 @@ namespace IntermediateAPI.Models.External
         public string City { get; set; }
         [Required]
         public string State { get; set; }
+        
+        public string? StateProvinceCode { get; set; }
         [Required]
         public string ZipCode { get; set; }
         [Required]
