@@ -18,7 +18,7 @@ namespace IntermediateAPI.Models.External
         /// DateTime
         /// </summary>
         [Required]
-        public DateTime DateOfBirth { get; set; }
+        public string DateOfBirth { get; set; }
         [Required]
         public string Gender { get; set; }
         [Required]
