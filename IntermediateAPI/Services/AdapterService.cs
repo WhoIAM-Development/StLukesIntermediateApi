@@ -23,6 +23,10 @@ namespace IntermediateAPI.Services
         public async Task<(bool successful, ExperianQuestions? response, ErrorResponse? error)> GetQuestions(ExperianUserProfile getQuestionsInput)
         {
             getQuestionsInput.StateProvinceCode = StateCodeConverter.GetStateCode(getQuestionsInput.State);
+            if (getQuestionsInput?.DateOfBirth != null)
+            {
+                getQuestionsInput.DateOfBirth = DateFormatter.RemoveTimePart(getQuestionsInput.DateOfBirth);
+            }
             var result = await client.PostAsync<ExperianQuestions, ErrorResponse>("/api/v1/B2C/getExperianQuestions", getQuestionsInput);
             
             return result;
@@ -61,6 +65,10 @@ namespace IntermediateAPI.Services
 
         public async Task<(bool successful, UserCreatedResponse? response, ErrorResponse? error)> CreateUser(UserProfile validateUserDetailsInput)
         {
+            if (validateUserDetailsInput?.DateOfBirth != null)
+            {
+                validateUserDetailsInput.DateOfBirth = DateFormatter.RemoveTimePart(validateUserDetailsInput.DateOfBirth);
+            }
             var result = await client.PostAsync<UserCreatedResponse, ErrorResponse>("/api/v1/B2C/user/create", validateUserDetailsInput);
 
             return result;
