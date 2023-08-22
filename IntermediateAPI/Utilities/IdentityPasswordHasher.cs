@@ -1,70 +1,20 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Collections;
+using System.Data.SqlTypes;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace IntermediateAPI.Utilities
 {
     public static class IdentityPasswordHasher
     {
 
-        public static string GenerateIdentityV3Hash(string password, KeyDerivationPrf prf = KeyDerivationPrf.HMACSHA256, int iterationCount = 10000, int saltSize = 16)
-        {
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                var salt = new byte[saltSize];
-                rng.GetBytes(salt);
-
-                var pbkdf2Hash = KeyDerivation.Pbkdf2(password, salt, prf, iterationCount, 32);
-                return Convert.ToBase64String(ComposeIdentityV3Hash(salt, (uint)iterationCount, pbkdf2Hash));
-            }
-        }
-        private static byte[] ComposeIdentityV3Hash(byte[] salt, uint iterationCount, byte[] passwordHash)
-        {
-            var hash = new byte[1 + 4/*KeyDerivationPrf value*/ + 4/*Iteration count*/ + 4/*salt size*/ + salt.Length /*salt*/ + 32 /*password hash size*/];
-            hash[0] = 1; //Identity V3 marker
-
-            Buffer.BlockCopy(ConvertToNetworkOrder((uint)KeyDerivationPrf.HMACSHA256), 0, hash, 1, sizeof(uint));
-            Buffer.BlockCopy(ConvertToNetworkOrder((uint)iterationCount), 0, hash, 1 + sizeof(uint), sizeof(uint));
-            Buffer.BlockCopy(ConvertToNetworkOrder((uint)salt.Length), 0, hash, 1 + 2 * sizeof(uint), sizeof(uint));
-            Buffer.BlockCopy(salt, 0, hash, 1 + 3 * sizeof(uint), salt.Length);
-            Buffer.BlockCopy(passwordHash, 0, hash, 1 + 3 * sizeof(uint) + salt.Length, passwordHash.Length);
-
-            return hash;
-        }
-        public static bool VerifyIdentityV3Hash(string password, string passwordHash)
-        {
-            var identityV3HashArray = Convert.FromBase64String(passwordHash);
-            if (identityV3HashArray[0] != 1) throw new InvalidOperationException("passwordHash is not Identity V3");
-
-            var prfAsArray = new byte[4];
-            Buffer.BlockCopy(identityV3HashArray, 1, prfAsArray, 0, 4);
-            var prf = (KeyDerivationPrf)ConvertFromNetworOrder(prfAsArray);
-
-            var iterationCountAsArray = new byte[4];
-            Buffer.BlockCopy(identityV3HashArray, 5, iterationCountAsArray, 0, 4);
-            var iterationCount = (int)ConvertFromNetworOrder(iterationCountAsArray);
-
-            var saltSizeAsArray = new byte[4];
-            Buffer.BlockCopy(identityV3HashArray, 9, saltSizeAsArray, 0, 4);
-            var saltSize = (int)ConvertFromNetworOrder(saltSizeAsArray);
-
-            var salt = new byte[saltSize];
-            Buffer.BlockCopy(identityV3HashArray, 13, salt, 0, saltSize);
-
-            var savedHashedPassword = new byte[identityV3HashArray.Length - 1 - 4 - 4 - 4 - saltSize];
-            Buffer.BlockCopy(identityV3HashArray, 13 + saltSize, savedHashedPassword, 0, savedHashedPassword.Length);
-
-            var hashFromInputPassword = KeyDerivation.Pbkdf2(password, salt, prf, iterationCount, 32);
-
-            return AreByteArraysEqual(hashFromInputPassword, savedHashedPassword);
-        }
-
-        public  static string GenerateIdentityV2Hash(string password)
+        public static (string Salt, string PasswordHash) GenerateIdentityHash(string password)
         {
             const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.HMACSHA1; // default for Rfc2898DeriveBytes
             const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
             const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
             const int SaltSize = 128 / 8; // 128 bits
-
 
             var salt = new byte[SaltSize];
             using (var rng = RandomNumberGenerator.Create())
@@ -72,31 +22,79 @@ namespace IntermediateAPI.Utilities
                 rng.GetBytes(salt);
             }
             byte[] subkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+
+            var outputBytes = new byte[1 + SaltSize + Pbkdf2SubkeyLength];
+            outputBytes[0] = 0x00; // format marker
+            Buffer.BlockCopy(salt, 0, outputBytes, 1, SaltSize);
+            Buffer.BlockCopy(subkey, 0, outputBytes, 1 + SaltSize, Pbkdf2SubkeyLength);
+            return (Convert.ToBase64String(salt),Convert.ToBase64String(outputBytes));
         }
 
-        #region Private Methods
-        private static bool AreByteArraysEqual(byte[] array1, byte[] array2)
-        {
-            if (array1.Length != array2.Length) return false;
+        public static (string Salt, string PasswordHash) GenerateIdentityHash(string password, string salt)
+        { 
+            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.HMACSHA1; // default for Rfc2898DeriveBytes
+            const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
+            const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
+            const int SaltSize = 128 / 8; // 128 bits
 
-            var areEqual = true;
-            for (var i = 0; i < array1.Length; i++)
-            {
-                areEqual &= (array1[i] == array2[i]);
-            }
-            //If you stop as soon as the arrays don't match you'll be disclosing information about how different they are by the time it takes to compare them
-            //this way no information is disclosed
-            return areEqual;
-        }
-        private static byte[] ConvertToNetworkOrder(uint number)
-        {
-            return BitConverter.GetBytes(number).Reverse().ToArray();
+            var saltArray = new byte[SaltSize];
+            //using (var rng = RandomNumberGenerator.Create())
+            //{
+            //    rng.GetBytes(saltArray);
+            //}
+            byte[] saltStringBytes = Convert.FromBase64String(salt);
+
+            Buffer.BlockCopy(saltStringBytes, 0, saltArray, 0, saltStringBytes.Length);
+
+            
+
+
+            byte[] subkey = KeyDerivation.Pbkdf2(password, saltArray, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+
+            var outputBytes = new byte[1 + SaltSize + Pbkdf2SubkeyLength];
+            outputBytes[0] = 0x00; // format marker
+            Buffer.BlockCopy(saltArray, 0, outputBytes, 1, SaltSize);
+            Buffer.BlockCopy(subkey, 0, outputBytes, 1 + SaltSize, Pbkdf2SubkeyLength);
+            return (Convert.ToBase64String(saltArray), Convert.ToBase64String(outputBytes));
         }
 
-        private static uint ConvertFromNetworOrder(byte[] reversedUint)
+
+        public static string ExtractSalt(string hashedPassword)
         {
-            return BitConverter.ToUInt32(reversedUint.Reverse().ToArray(), 0);
+            const int SaltSize = 128 / 8; // 128 bits
+
+            byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
+
+            byte[] salt = new byte[SaltSize];
+            Buffer.BlockCopy(decodedHashedPassword, 1, salt, 0, salt.Length);
+
+            return Convert.ToBase64String(salt);
         }
-        #endregion
+
+        public static (string Salt, string PasswordHash) VerifyPassword(string hashedPassword, string password)
+        {
+            byte[] decodedHashedPassword = Convert.FromBase64String(hashedPassword);
+
+            const KeyDerivationPrf Pbkdf2Prf = KeyDerivationPrf.HMACSHA1; // default for Rfc2898DeriveBytes
+            const int Pbkdf2IterCount = 1000; // default for Rfc2898DeriveBytes
+            const int Pbkdf2SubkeyLength = 256 / 8; // 256 bits
+            const int SaltSize = 128 / 8; // 128 bits
+
+
+            byte[] salt = new byte[SaltSize];
+            Buffer.BlockCopy(decodedHashedPassword, 1, salt, 0, salt.Length);
+
+            byte[] expectedSubkey = new byte[Pbkdf2SubkeyLength];
+            Buffer.BlockCopy(decodedHashedPassword, 1 + salt.Length, expectedSubkey, 0, expectedSubkey.Length);
+
+            // Hash the incoming password and verify it
+            byte[] actualSubkey = KeyDerivation.Pbkdf2(password, salt, Pbkdf2Prf, Pbkdf2IterCount, Pbkdf2SubkeyLength);
+
+            var outputBytes = new byte[1 + SaltSize + Pbkdf2SubkeyLength];
+            outputBytes[0] = 0x00; // format marker
+            Buffer.BlockCopy(salt, 0, outputBytes, 1, SaltSize);
+            Buffer.BlockCopy(actualSubkey, 0, outputBytes, 1 + SaltSize, Pbkdf2SubkeyLength);
+            return (Convert.ToBase64String(salt), Convert.ToBase64String(outputBytes));
+        }
     }
 }

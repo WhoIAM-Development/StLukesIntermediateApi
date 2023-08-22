@@ -1,4 +1,5 @@
 ﻿using IntermediateAPI.Models.Hashing;
+using IntermediateAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace IntermediateAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [AllowAnonymous]
     public class HashingController : ControllerBase
@@ -15,14 +16,36 @@ namespace IntermediateAPI.Controllers
         {
 
         }
+
         [HttpPost]
-        public async Task<IActionResult> HashPasswword([FromBody] HashingInput input)
+        public async Task<IActionResult> HashPassword([FromBody] HashingInput input)
         {
-            throw new NotImplementedException();
-            //return Ok(new HashingOutput { HashedPassword = Hash(input.Password)});
+            var pwHashResult = IdentityPasswordHasher.GenerateIdentityHash(input.Password);
+            return Ok(new { Salt = pwHashResult.Salt, Hash = pwHashResult.PasswordHash });
         }
-        
+
+        [HttpPost]
+        public async Task<IActionResult> HashPasswordWithSalt([FromBody] HashingInput input)
+        {
+            var pwHashResult = IdentityPasswordHasher.GenerateIdentityHash(input.Password, input.Salt);
+            return Ok(new { Salt = pwHashResult.Salt, Hash = pwHashResult.PasswordHash });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExtractSalt([Bind] string hashedPassword)
+        {
+            var result = new { Salt = IdentityPasswordHasher.ExtractSalt(hashedPassword) };
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyPassword([Bind] string hashedPassword, [Bind] string password)
+        {
+            var pwHashResult = IdentityPasswordHasher.VerifyPassword(hashedPassword, password);
+            return Ok(new { Salt = pwHashResult.Salt, Hash = pwHashResult.PasswordHash });
+        }
+
     }
-    
+
 
 }
