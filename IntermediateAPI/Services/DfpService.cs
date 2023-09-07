@@ -15,24 +15,24 @@ namespace IntermediateAPI.Services
     public class DfpService
     {
         private readonly FraudProtectionSettings fraudProtectionSettings;
+        private readonly TokenProviderServiceSettings tokenProviderServiceSettings;
         private readonly HttpClient client;
-        private readonly IAuthProvider dfpAuthService;
         private readonly ILogger<DfpService> logger;
         public string NewCorrelationId => Guid.NewGuid().ToString();
 
         public DfpService(
             IOptions<FraudProtectionSettings> fraudProtectionSettings,
-            IAuthProvider dfpAuthService,
+            IOptions<TokenProviderServiceSettings> tokenProviderServiceSettings,
             ILogger<DfpService> logger,
             System.Net.Http.IHttpClientFactory factory)
         {
             this.fraudProtectionSettings = fraudProtectionSettings.Value;
-            this.dfpAuthService = dfpAuthService;
+            this.tokenProviderServiceSettings = tokenProviderServiceSettings.Value;
             this.logger = logger;
-            client = factory.CreateClient();
+            this.client = factory.CreateClient();
         }
 
-        public async Task<ApiResponse<DfpAccountActionResponse>> CreateAccount(DfpCreateAccountInputClaims input, string correlationId, string signUpId)
+        public async Task<(bool Status, string Message, DfpAccountActionResponse Data)> CreateAccount(DfpCreateAccountInputClaims input, string correlationId, string signUpId)
         {
             var endpoint = $"/v1.0/action/account/create/{signUpId}";
 
@@ -49,24 +49,24 @@ namespace IntermediateAPI.Services
                 User = new
                 {
                     Username = input.Email,
-                    input.FirstName,
-                    input.LastName,
-                    input.Language,
+                    FirstName = input.FirstName,
+                    LastName = input.LastName,
+                    Language = input.Language,
                     UserType = "Consumer",
                 },
                 Email = new[] {
                     new
                     {
                         EmailValue= input.Email,
-                        input.IsEmailValidated,
-                        input.IsEmailUsername,
+                        IsEmailValidated= input.IsEmailValidated,
+                        IsEmailUsername=input.IsEmailUsername,
                         EmailType= "Primary"
                     }
                 },
                 Device = new
                 {
-                    input.IpAddress,
-                    input.DeviceContextId,
+                    IpAddress = input.IpAddress,
+                    DeviceContextId = input.DeviceContextId,
                     Provider = "DFPFingerprinting"
                 },
 
@@ -78,7 +78,7 @@ namespace IntermediateAPI.Services
             {
                 createAccountInput.AddProperty("SsoAuthenticationProvider", new
                 {
-                    input.DisplayName,
+                    DisplayName = input.DisplayName,
                     AuthenticationProvider = input.DisplayName
                 });
             }
@@ -86,7 +86,7 @@ namespace IntermediateAPI.Services
             return await PostAsync<DfpAccountActionResponse>(endpoint, createAccountInput, correlationId);
         }
 
-        public async Task<ApiResponse<DfpAccountStatusResponse>> CreateAccountStatus(DfpCreateAccountStatusInputClaims input, string correlationId)
+        public async Task<(bool Status, string Message, DfpAccountStatusResponse Data)> CreateAccountStatus(DfpCreateAccountStatusInputClaims input, string correlationId)
         {
             var endpoint = $"/v1.0/observe/account/create/status/{input.SignUpId}";
 
@@ -95,15 +95,15 @@ namespace IntermediateAPI.Services
                 Metadata = new
                 {
                     TrackingId = Guid.NewGuid().ToString(),
-                    input.SignUpId,
+                    SignUpId = input.SignUpId,
                     MerchantTimeStamp = DateTime.Now,
                     UserId = input.UserId ?? "UnKnown"
                 },
                 StatusDetails = new
                 {
-                    input.StatusType,
-                    input.ReasonType,
-                    input.ChallengeType,
+                    StatusType = input.StatusType,
+                    ReasonType = input.ReasonType,
+                    ChallengeType = input.ChallengeType,
                     StatusDate = DateTime.Now
                 },
                 Name = "AP.AccountCreation.Status",
@@ -113,7 +113,7 @@ namespace IntermediateAPI.Services
             return await PostAsync<DfpAccountStatusResponse>(endpoint, createAccountInput, correlationId);
         }
 
-        public async Task<ApiResponse<DfpAccountActionResponse>> LoginAccount(DfpLoginAccountInputClaims input, string correlationId, string loginId)
+        public async Task<(bool Status, string Message, DfpAccountActionResponse Data)> LoginAccount(DfpLoginAccountInputClaims input, string correlationId, string loginId)
         {
             var endpoint = $"/v1.0/action/account/login/{input.UserId}";
 
@@ -130,13 +130,13 @@ namespace IntermediateAPI.Services
                 User = new
                 {
                     Username = input.Email,
-                    input.UserId,
+                    UserId = input.UserId,
                     UserType = "Consumer",
                 },
                 Device = new
                 {
-                    input.IpAddress,
-                    input.DeviceContextId,
+                    IpAddress = input.IpAddress,
+                    DeviceContextId = input.DeviceContextId,
                     Provider = "DFPFingerprinting"
                 },
 
@@ -147,7 +147,7 @@ namespace IntermediateAPI.Services
             return await PostAsync<DfpAccountActionResponse>(endpoint, createAccountInput, correlationId);
         }
 
-        public async Task<ApiResponse<DfpAccountStatusResponse>> LoginAccountStatus(DfpLoginAccountStatusInputClaims input, string correlationId)
+        public async Task<(bool Status, string Message, DfpAccountStatusResponse Data)> LoginAccountStatus(DfpLoginAccountStatusInputClaims input, string correlationId)
         {
             var endpoint = $"/v1.0/observe/account/login/status/{input.UserId}";
 
@@ -156,15 +156,15 @@ namespace IntermediateAPI.Services
                 Metadata = new
                 {
                     TrackingId = Guid.NewGuid().ToString(),
-                    input.LoginId,
+                    LoginId = input.LoginId,
                     MerchantTimeStamp = DateTime.Now,
-                    input.UserId
+                    UserId = input.UserId
                 },
                 StatusDetails = new
                 {
-                    input.StatusType,
-                    input.ReasonType,
-                    input.ChallengeType,
+                    StatusType = input.StatusType,
+                    ReasonType = input.ReasonType,
+                    ChallengeType = input.ChallengeType,
                     StatusDate = DateTime.Now
                 },
                 Name = "AP.AccountLogin.Status",
@@ -175,11 +175,11 @@ namespace IntermediateAPI.Services
         }
 
         #region PRIVATE METHODS
-        private async Task<ApiResponse<T>> PostAsync<T>(string endpoint, object content, string correlationId)
+        private async Task<(bool Status, string Message, T Data)> PostAsync<T>(string endpoint, object content, string correlationId)
         {
             try
             {
-                var authToken = await dfpAuthService.AcquireTokenAsync();
+                var authToken = await AcquireTokenAsync();
 
                 var url = $"{fraudProtectionSettings.ApiBaseUrl}{endpoint}";
                 var serializationSettings = new JsonSerializerSettings
@@ -189,52 +189,71 @@ namespace IntermediateAPI.Services
                 };
 
                 var json = JsonConvert.SerializeObject(content, serializationSettings);
-                logger.LogInformation($"Sending object to DFP URL: {url} | Payload: {json}");
+                this.logger.LogInformation($"Sending object to DFP URL: {url} | Payload: {json}");
 
-                using (var request = BuildDfpRequest(correlationId, authToken, url, json))
-                using (HttpResponseMessage response = await client.SendAsync(request))
+                using (var request = new HttpRequestMessage
                 {
-                    response.EnsureSuccessStatusCode();
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    var data = JsonConvert.DeserializeObject<T>(responseBody);
-
-                    //return (true, "Success", data);
-                    return new ApiResponse<T>
-                    {
-                        Status = true,
-                        Message = "Success",
-                        Data = data,
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "DFP POST call failed");
-                //return (false, ex.Message, default(T));
-                return new ApiResponse<T>
-                {
-                    Status = false,
-                    Message = ex.Message,
-                    Data = default
-                };
-            }
-        }
-
-        private HttpRequestMessage BuildDfpRequest(string correlationId, string authToken, string url, string json)
-        {
-            return new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(url),
-                Headers =
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri(url),
+                    Headers =
                     {
                         { HttpRequestHeader.Authorization.ToString(), $"Bearer {authToken}" },
                         { "x-ms-correlation-id", correlationId },
                         //{ HttpRequestHeader.Accept.ToString(), "application/json" },
-                        { "x-ms-dfpenvid", fraudProtectionSettings.EnvironmentId }
+                        { "x-ms-dfpenvid", fraudProtectionSettings.InstanceId }
                     },
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                })
+                {
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        var responseBody = await response.Content.ReadAsStringAsync();
+                        var data = JsonConvert.DeserializeObject<T>(responseBody);
+
+                        return (true, "Success", data);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "DFP POST call failed");
+                return (false, ex.Message, default(T));
+            }
+        }
+
+        private async Task<string> AcquireTokenAsync()
+        {
+            if (string.IsNullOrEmpty(tokenProviderServiceSettings.CertificateThumbprint) && string.IsNullOrEmpty(tokenProviderServiceSettings.ClientSecret))
+                throw new InvalidOperationException("Configure the token provider settings in the appsettings.json file.");
+
+            if (tokenProviderServiceSettings.CertificateThumbprint != "" && tokenProviderServiceSettings.ClientSecret != "")
+                throw new InvalidOperationException("Only configure certificate or secret authenticate, not both, in the appsettings file.");
+
+            return tokenProviderServiceSettings.CertificateThumbprint != "" ?
+                await AcquireTokenWithCertificateAsync() :
+                await AcquireTokenWithSecretAsync();
+        }
+
+        private async Task<string> AcquireTokenWithCertificateAsync()
+        {
+            var x509Cert = CertificateUtility.GetByThumbprint(tokenProviderServiceSettings.CertificateThumbprint);
+            var clientAssertion = new ClientAssertionCertificate(tokenProviderServiceSettings.ClientId, x509Cert);
+            var context = new AuthenticationContext(tokenProviderServiceSettings.Authority);
+            var authenticationResult = await context.AcquireTokenAsync(tokenProviderServiceSettings.Resource, clientAssertion);
+
+            return authenticationResult.AccessToken;
+        }
+
+        private async Task<string> AcquireTokenWithSecretAsync()
+        {
+            var clientAssertion = new ClientCredential(tokenProviderServiceSettings.ClientId, tokenProviderServiceSettings.ClientSecret);
+            var context = new AuthenticationContext(tokenProviderServiceSettings.Authority);
+            var authenticationResult = await context.AcquireTokenAsync(tokenProviderServiceSettings.Resource, clientAssertion);
+
+            return authenticationResult.AccessToken;
         }
 
         #endregion
