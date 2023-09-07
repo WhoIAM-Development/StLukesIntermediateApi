@@ -10,8 +10,7 @@ namespace IntermediateAPI
     {
         public static void AddDataServices(this IServiceCollection services)
         {
-            services.AddSingleton<DfpService>();
-
+            
             services.AddOptions<FraudProtectionSettings>().Configure<IConfiguration>((settings, configuration) =>
             {
                 configuration.GetSection("FraudProtectionSettings").Bind(settings);
@@ -28,6 +27,8 @@ namespace IntermediateAPI
 
             services.AddSingleton<AdapterService>();
             services.AddSingleton<GraphService>();
+            services.AddSingleton<IAuthProvider, DfpAuthProvider>();
+            services.AddSingleton<DfpService>();
 
 
             services.AddSingleton(new MessagingUtility(Environment.GetEnvironmentVariable("ENVIRONMENT") == "Development"));
