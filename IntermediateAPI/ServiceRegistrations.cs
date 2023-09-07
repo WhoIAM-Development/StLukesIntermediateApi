@@ -30,10 +30,6 @@ namespace IntermediateAPI
             services.AddSingleton<GraphService>();
 
 
-            services.AddOptions<TokenProviderServiceSettings>().Configure<IConfiguration>((settings, configuration) =>
-            {
-                configuration.GetSection("FraudProtectionSettings:TokenProviderConfig").Bind(settings);
-            });            
             services.AddSingleton(new MessagingUtility(Environment.GetEnvironmentVariable("ENVIRONMENT") == "Development"));
 
             services.AddHttpClient();
